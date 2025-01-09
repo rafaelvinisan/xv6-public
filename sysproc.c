@@ -99,17 +99,35 @@ sys_date(void)
   return 0; // Retorno para indicar sucesso.
 }
 
+pte_t *walkpgdir(pde_t *pgdir, const void *va, int alloc);
+
 int
 sys_virt2real(void)
 {
-    char *va; // Endereço virtual passado pelo usuário.
+    char *va;
     if (argptr(0, &va, sizeof(char*)) < 0)
         return -1;
 
-    pte_t *pte = walkpgdir(myproc()->pgdir, va, 0); // Encontra o PTE.
+    pte_t *pte = walkpgdir(myproc()->pgdir, va, 0); // Localiza o PTE.
     if (!pte || !(*pte & PTE_P)) // Verifica se a página está presente.
         return -1;
 
     uint pa = PTE_ADDR(*pte); // Obtém o endereço físico base.
-    return (char*)(pa | ((uint)va & 0xFFF)); // Retorna endereço físico.
+    return pa | ((uint)va & 0xFFF); // Retorna o endereço físico como inteiro.
 }
+
+
+int
+sys_num_pages(void)
+{
+    struct proc *curproc = myproc();
+    int num_pages = 0;
+
+    for (uint va = 0; va < curproc->sz; va += PGSIZE) {
+        pte_t *pte = walkpgdir(curproc->pgdir, (char*)va, 0); // Localiza o PTE.
+        if (pte && (*pte & PTE_P)) // Verifica se a página está presente.
+            num_pages++;
+    }
+    return num_pages;
+}
+

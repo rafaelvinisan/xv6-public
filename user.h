@@ -25,6 +25,7 @@ int sleep(int);
 int uptime(void);
 int date(void);
 char* virt2real(char *va);
+int num_pages(void);
 
 
 // ulib.c
