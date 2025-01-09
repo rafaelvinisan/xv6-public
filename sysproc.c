@@ -98,3 +98,18 @@ sys_date(void)
   cprintf("Data atual: 2025-01-08 15:30:00\n");
   return 0; // Retorno para indicar sucesso.
 }
+
+int
+sys_virt2real(void)
+{
+    char *va; // Endereço virtual passado pelo usuário.
+    if (argptr(0, &va, sizeof(char*)) < 0)
+        return -1;
+
+    pte_t *pte = walkpgdir(myproc()->pgdir, va, 0); // Encontra o PTE.
+    if (!pte || !(*pte & PTE_P)) // Verifica se a página está presente.
+        return -1;
+
+    uint pa = PTE_ADDR(*pte); // Obtém o endereço físico base.
+    return (char*)(pa | ((uint)va & 0xFFF)); // Retorna endereço físico.
+}
