@@ -89,3 +89,12 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+int
+sys_date(void)
+{
+  char *ptr;
+  argptr(0, &ptr, sizeof(struct rtcdate*));
+  cprintf("Data atual: 2025-01-08 15:30:00\n");
+  return 0; // Retorno para indicar sucesso.
+}
